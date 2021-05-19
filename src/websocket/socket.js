@@ -1,4 +1,7 @@
-let ws
+import opt from "@/constants/chessOperations"
+import handler from "@/websocket/messageHandler"
+
+let ws = null
 
 export default {
     connect(url) {
@@ -23,8 +26,21 @@ function onClose(e) {
     console.log(e)
 }
 
+
 function onMessage(e) {
     console.log('收到消息 ', e)
+    let data = e.data
+    console.log('socket信息', data)
+    switch (data.opt) {
+        case opt.STEP:
+            handler.showStep(data)
+            break
+        case opt.OVER:
+            handler.gameOver(data)
+            break
+        default:
+            break
+    }
 }
 
 function onError(e) {
