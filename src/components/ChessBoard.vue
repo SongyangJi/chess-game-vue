@@ -16,6 +16,15 @@
 
 import COLOR from '@/constants/color'
 
+/**
+ *
+ * 五子棋的棋盘的规则是 15 × 15 的 棋盘，也就是一共有 225 个格点
+ *
+ *  495 = 15 * 33
+ *
+ *
+ */
+
 const side = 495
 // 棋盘格子边长
 const d = 33
@@ -49,18 +58,19 @@ export default {
       // console.log("(x,y) ",x,y)
       let i = Math.floor(x / d)
       let j = Math.floor(y / d)
-      console.log("(i,j)  ", i, j)
+      // console.log("(i,j)  ", i, j)
 
       // 如果没有下过此格点
       if (!this.hasStep(i, j)) {
-        this.chess(i, j)
+        // console.log('下棋')
+        this.chess(i, j, this.myColor)
       }
 
     },
-    chess(i, j) {
+    chess(i, j, color) {
       this.steps.push({i, j})
-      this.drawChess(i, j, this.myColor)
-      this.drawLabel(i, j)
+      this.drawChess(i, j, color)
+      // this.drawLabel(i, j)
     },
     /**
      *
@@ -116,8 +126,28 @@ export default {
   mounted() {
     this.initCanvas();
   },
-  computed: {}
-
+  computed: {
+    step() {
+      return this.$store.getters.step
+    },
+    gameState() {
+      return this.$store.getters.gameState
+    },
+    winner() {
+      return this.$store.getters.winner
+    }
+  },
+  watch: {
+    step(step) {
+      this.chess(step.x, step.y, step.color)
+    },
+    gameState(gameState) {
+      alert("对局状态更新" + gameState)
+    },
+    winner(winner) {
+      alert("赢家是" + winner)
+    }
+  }
 }
 </script>
 
