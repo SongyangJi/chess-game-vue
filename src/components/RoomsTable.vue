@@ -25,19 +25,44 @@
 
       <el-table-column label="room">
         <div slot-scope="scope" style="display: inline-block">
-          <div v-if="isVisible(scope.row)" :class="getChessClass(scope.row.owner)"></div>
-          <div v-if="isVisible(scope.row)" style="float: left">{{ scope.row.owner.nickName }} vs {{ scope.row.challenger.nickName }}</div>
-          <div v-if="isVisible(scope.row)" :class="getChessClass( scope.row.challenger)"></div>
+
+          <div v-if="showOwner(scope.row)" :class="getChessClass(scope.row.owner)"></div>
+
+          <div v-if="showOwner(scope.row)" style="float: left">
+            {{ scope.row.owner.nickName}}
+          </div>
+
+
+
+          <div v-if="showChallenger(scope.row)" style="float: left">
+            {{"-  VS  -"+scope.row.challenger.nickName }}
+          </div>
+          <div v-if="showChallenger(scope.row)" :class="getChessClass( scope.row.challenger)"></div>
+
         </div>
       </el-table-column>
 
-      <el-table-column align="align:center" prop="roomId">
+      <el-table-column align="align:center">
+        <span slot-scope="scope">
+          {{ "游戏房间 " + scope.row.roomId }}
+        </span>
       </el-table-column>
 
       <el-table-column align="right">
         <template slot-scope="scope">
-          <el-button size="mini" @click="onChallenge(scope.row)" v-if="challengeShow(scope.row)">挑战</el-button>
-          <el-button size="mini" @click="onSpectate(scope.row)">观战</el-button>
+
+          <el-button size="mini" @click="onChallenge(scope.row)"
+                     v-if="showChallengeButton(scope.row)">挑战
+          </el-button>
+
+          <el-button size="mini" @click="onInto(scope.row)"
+                     v-else-if="showIntoButton(scope.row)">进入
+          </el-button>
+
+          <el-button size="mini" @click="onSpectate(scope.row)"
+                     v-if="showSpectateButton(scope.row)">观战
+          </el-button>
+
         </template>
       </el-table-column>
 
@@ -49,24 +74,62 @@
 <script>
 import color from "@/constants/color"
 
-import {getRequest} from "@/utils/api";
+import {getRequest, postRequest} from "@/utils/api";
 
 export default {
   name: "RoomTable",
   data() {
     return {
-      dialog: {
-        visible: false,
-        color: null
-      },
       roomList: [],
       time: null
     }
   },
   methods: {
+    // 创建新房间
     onCreateRoom() {
-      this.dialog.visible = true
+      if (this.$store.getters.myRoom != null) {
+        alert('您已经创建了一个房间，不可以创建多个')
+        return;
+      }
+      let api = '/api/game/room'
+      getRequest(api).then(res => {
+        if (res.status === 200) {
+
+          let roomId = res.data
+
+          alert("创建房间成功" + roomId)
+          this.$store.commit('createMyRoom', roomId)
+
+          let role = {
+            "uid": this.$store.getters.uid,
+            "nickName": this.$store.getters.nickName,
+            "turn": 0
+          }
+
+          this.setRoomRole(roomId, role)
+
+        } else if (res.status === 204) {
+          alert("创建房间失败")
+        }
+
+      })
     },
+    setRoomRole(roomId, role) {
+      console.log('角色', role)
+      let api = '/api/game/room/role/' + roomId
+      postRequest(api, role).then(res => {
+        if (res.status === 200) {
+          console.log('房间', roomId, ' ', role, '角色设置成功')
+        } else {
+          alert("角色设置失败")
+        }
+      }).catch(
+          res => {
+            alert("角色设置失败")
+          }
+      )
+    },
+    // 刷新房间列表
     refresh() {
       let api = '/api/game/room/room-list'
       getRequest(api).then(res => {
@@ -76,10 +139,6 @@ export default {
         }
       })
     },
-    onDialogConfirm() {
-      this.dialog.visible = false
-      // 创建房间
-    },
     getChessClass(player) {
       if (player.turn === color.BLACK.CODE) {
         return 'black'
@@ -88,17 +147,45 @@ export default {
       }
       return ''
     },
-    onChallenge(room) {
-
+    // 打开标签页并跳转（如果已经打开，则直接跳转）
+    openTab(room) {
+      this.$store.commit('addRoomTab', room)
+      this.$store.commit('changeCurrentTab', room.roomId)
     },
-    challengeShow(room) {
+    onInto(room) {
+      this.openTab(room)
+    },
+    onChallenge(room) {
+      this.openTab(room)
 
+      let role = {
+        "uid": this.$store.getters.uid,
+        "nickName": this.$store.getters.nickName,
+        "turn": 1
+      }
+
+      this.setRoomRole(room.roomId, role)
     },
     onSpectate(room) {
-
+      this.openTab(room)
+      // 以观战者身份加入
     },
-    isVisible(data) {
-      return data.owner != null && data.challenger != null
+    showOwner(room) {
+      return room.owner != null && room.owner.nickName != null
+    },
+    showChallenger(room) {
+      return room.challenger != null && room.challenger.nickName != null
+    },
+    showChallengeButton(room) {
+      // 有房主且不是自己，且尚无挑战者
+      return room.owner != null && this.$store.getters.uid !== room.owner.uid && room.challenger == null
+    },
+    showSpectateButton(room) {
+      let uid = this.$store.getters.uid;
+      return room.owner != null && room.challenger != null && room.owner.uid !== uid && room.challenger.uid !== uid;
+    },
+    showIntoButton(room) {
+      return room.owner != null && this.$store.getters.uid === room.owner.uid
     }
   },
   computed: {
@@ -113,6 +200,24 @@ export default {
     clearInterval(this.timer);
   }
 }
+
+/*
+[
+    {
+        "roomId": "room1",
+        "owner": {
+            "uid": "",
+            "nickName": "张三",
+            "turn": 0
+        },
+        "challenger": {
+            "uid": "",
+            "nickName": "李四",
+            "turn": 1
+        }
+    }
+]
+*/
 </script>
 
 
