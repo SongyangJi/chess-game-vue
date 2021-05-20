@@ -4,9 +4,8 @@ import VueRouter from 'vue-router'
 Vue.use(VueRouter)
 
 import Login from "@/views/Login";
-import Layout from "@/views/Layout";
-import Hall from "@/views/Hall";
-import Room from "@/views/Room";
+import Home from "@/views/Home";
+
 
 const routes = [
     {
@@ -15,21 +14,7 @@ const routes = [
     },
     {
         path: '/layout',
-        component: Layout,
-        children: [
-            {
-                path: 'room',
-                component: Room
-            },
-            {
-                path: 'hall',
-                component: Hall
-            },
-            {
-                path: '*',
-                redirect: 'room'
-            }
-        ],
+        component: Home
     },
     {
         path: '*',
