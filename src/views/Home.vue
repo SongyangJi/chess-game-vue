@@ -5,13 +5,16 @@
         <span class="brand-name">在线五子棋</span>
       </el-header>
       <el-main>
-        <el-tabs>
-          <el-tab-pane label="大厅" name="first">
+        <el-tabs v-model="currentTab">
+
+          <el-tab-pane label="大厅" name="hall">
             <Hall></Hall>
           </el-tab-pane>
-          <el-tab-pane label="房间" name="second">
-            <Room></Room>
+
+          <el-tab-pane v-for="item in tabs" :key="item.roomId" :label="'【房间】'+item.roomId" :name="item.roomId">
+            <Room :roomId="item.roomId"/>
           </el-tab-pane>
+
         </el-tabs>
       </el-main>
 
@@ -25,7 +28,24 @@ import Room from "@/views/Room";
 
 export default {
   name: "Layout",
-  components: {Room, Hall}
+  data() {
+    return {}
+  },
+  components: {Room, Hall},
+  computed: {
+    tabs() {
+      return this.$store.getters.tabRooms
+    },
+    currentTab: {
+      get() {
+        return this.$store.getters.currentTab
+      },
+      set(val) {
+        // this.$store.getters.currentTab = val
+        this.$store.commit('changeCurrentTab', val)
+      }
+    }
+  }
 }
 </script>
 
