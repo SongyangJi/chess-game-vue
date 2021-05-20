@@ -4,7 +4,7 @@
       <Dialog dialog-title="聊天对话框"></Dialog>
     </el-col>
     <el-col :span="14">
-      <ChessBoard></ChessBoard>
+      <ChessBoard :room-id="roomId"></ChessBoard>
     </el-col>
     <el-col :span="5">
       <GameDetail></GameDetail>
@@ -19,6 +19,7 @@ import GameDetail from "@/components/GameDetail";
 
 export default {
   name: "Room",
+  props: ['roomId'],
   components: {ChessBoard, Dialog, GameDetail}
 }
 </script>
