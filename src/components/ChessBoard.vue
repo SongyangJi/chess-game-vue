@@ -3,7 +3,7 @@
     <el-header style="height: 20px; display: block; text-align: center">
     </el-header>
     <el-main>
-      <canvas id="board" @click="onClick">Your browser doesn't support canvas</canvas>
+      <canvas :id="roomId" @click="onClick">Your browser doesn't support canvas</canvas>
     </el-main>
     <el-footer style="height: 20px">
     </el-footer>
@@ -35,6 +35,7 @@ const r = 15
 
 export default {
   name: "ChessBoard",
+  props:['roomId'],
   data() {
     return {
       // canvas 画板
@@ -47,7 +48,7 @@ export default {
   },
   methods: {
     initCanvas() {
-      let canvas = document.getElementById("board");
+      let canvas = document.getElementById(this.roomId);
       canvas.width = side
       canvas.height = side
       this.context = canvas.getContext('2d');
