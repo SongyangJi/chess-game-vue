@@ -1,75 +1,72 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import ta from "element-ui/src/locale/lang/ta";
 
 Vue.use(Vuex)
-/*
-[
-    {
-        "roomId": "room1",
-        "owner": {
-            "uid": "",
-            "nickName": "张三",
-            "turn": 0
-        },
-        "challenger": {
-            "uid": "",
-            "nickName": "李四",
-            "turn": 1
-        }
-    }
-]
-*/
+
 export default new Vuex.Store({
     state: {
-        dot: {
-            x: null,
-            y: null,
-            color: null
-        },
         user: {
             uid: null,
             nickName: null
         },
-        game: {
-            state: null,
-            winner: null
-        },
-        // 自己创建的房间
+
+        // 以下很明显都是全局的，使用vuex管理再合适不过
+
+        // 自己创建的房间（因为是不允许创建单个人创建多个房间的）
         myRoom: null,
         // 首页的房间列表
         roomList: [],
-        // 打开的房间 ( room对象数组 )
-        tabRooms: [],
         // 当前标签
-        currentTab: 'hall'
+        currentTab: 'hall',
+        // 打开的房间 ( room对象数组 , 格式如下)
+        tabRooms: [
+            // {
+            //     roomId: null,
+            //     owner: {
+            //         uid: null,
+            //         nickName: null,
+            //         turn: 0
+            //     },
+            //     challenger: {
+            //         uid: null,
+            //         nickName: null,
+            //         turn: 1
+            //     },
+            //     selfRole: {
+            //         uid: null,
+            //         nickName: null,
+            //         turn: null
+            //     },
+            //     winner: null,
+            //     state: null
+            // }
+        ],
+        newestDotInRoom: null
     },
     getters: {
-        dot: state => state.dot,
+
+        // 游戏房间的对局信息
+        gameRoom: (state) => (roomId) => {
+            return state.tabRooms.find(room => room.roomId === roomId)
+        },
 
         // 角色的id、昵称
         uid: state => state.user.uid,
         nickName: state => state.user.nickName,
 
-        gameState: state => state.game.state,
-        winner: state => state.game.winner,
         myRoom: state => state.myRoom,
         roomList: state => state.roomList,
+
         tabRooms: state => state.tabRooms,
-        currentTab: state => state.currentTab
+        currentTab: state => state.currentTab,
+        newestDotInRoom: state => state.newestDotInRoom
     },
     mutations: {
-        step(state, dot) {
-            state.dot = dot
+        updateNewestDotInRoom(state, newestDotInRoom) {
+            state.newestDotInRoom = newestDotInRoom
         },
         setUser(state, user) {
             state.user = user
-        },
-        updateGameState(state, gameState) {
-            state.game.state = gameState
-        },
-        setWinner(state, winner) {
-            state.game.winner = winner
         },
         createMyRoom(state, room) {
             state.myRoom = room
