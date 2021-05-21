@@ -12,7 +12,7 @@
           </el-tab-pane>
 
           <el-tab-pane v-for="item in tabs" :key="item.roomId" :label="'【房间】'+item.roomId" :name="item.roomId">
-            <Room :roomId="item.roomId"/>
+            <Room :roomId="item.roomId" :self-role="item.selfRole"/>
           </el-tab-pane>
 
         </el-tabs>
