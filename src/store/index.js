@@ -41,7 +41,16 @@ export default new Vuex.Store({
             //     state: null
             // }
         ],
-        newestDotInRoom: null
+        // 单个对象 {roomId + 局内游戏信息}
+        newestDotInRoom: {
+            roomId: null,
+            dot:null
+        },
+        gameState: {
+            roomId:null,
+            state: null, // 枚举量
+            winner: null // role 赢家
+        }
     },
     getters: {
 
@@ -59,12 +68,12 @@ export default new Vuex.Store({
 
         tabRooms: state => state.tabRooms,
         currentTab: state => state.currentTab,
-        newestDotInRoom: state => state.newestDotInRoom
+
+
+        newestDotInRoom: state => state.newestDotInRoom,
+        gameState:state => state.gameState
     },
     mutations: {
-        updateNewestDotInRoom(state, newestDotInRoom) {
-            state.newestDotInRoom = newestDotInRoom
-        },
         setUser(state, user) {
             state.user = user
         },
@@ -84,7 +93,15 @@ export default new Vuex.Store({
         },
         changeCurrentTab(state, tabName) {
             state.currentTab = tabName
+        },
+
+        updateNewestDotInRoom(state, newestDotInRoom) {
+            state.newestDotInRoom = newestDotInRoom
+        },
+        updateGameState(state,gameState) {
+            state.gameState = gameState
         }
+
     },
     actions: {},
     modules: {}

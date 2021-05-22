@@ -1,6 +1,7 @@
 import store from "@/store/index"
 import {Socket} from "@/websocket/socket";
 import opt from "@/constants/chessOperations"
+import gameState from "@/constants/gameState";
 
 let url = 'ws://127.0.0.1:18080/topic/game/'
 
@@ -43,6 +44,15 @@ function showStep(gameMessage) {
         type: 'updateNewestDotInRoom',
         roomId: gameMessage.roomId,
         dot: gameMessage.dot
+    })
+}
+
+function gameOver(gameMessage) {
+    store.commit({
+        type: 'updateGameState',
+        roomId: gameMessage.roomId,
+        state: gameState.FINISH,
+        winner:gameMessage.role
     })
 }
 
