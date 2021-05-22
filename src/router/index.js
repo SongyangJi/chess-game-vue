@@ -13,8 +13,12 @@ const routes = [
         component: Login
     },
     {
-        path: '/layout',
-        component: Home
+        path: '/home',
+        component: Home,
+        meta: {
+            // 表明页面需要进行拦截
+            requiredAuth: true
+        }
     },
     {
         path: '*',
