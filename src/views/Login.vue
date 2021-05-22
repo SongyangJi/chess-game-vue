@@ -4,7 +4,7 @@
     <el-divider/>
     <el-form class="form" @submit.native.prevent>
       <el-form-item>
-        <el-input v-model="nickname" placeholder="请输入你的昵称" @keyup.enter.native="login"></el-input>
+        <el-input v-model="nickName" placeholder="请输入你的昵称" @keyup.enter.native="login"></el-input>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="login">游客登录</el-button>
@@ -20,22 +20,23 @@ export default {
   name: "LoginComponent",
   data() {
     return {
-      nickname: ''
+      nickName: ''
     }
   },
   methods: {
     login() {
-      let api = '/api/visitor/' + this.nickname;
+      let api = '/api/visitor/' + this.nickName;
       getRequest(api).then(res => {
         console.log(res.data)
         if (res.status === 200) {
           alert("将进入大厅")
-          let id = {
+          let user = {
             uid: res.data,
-            nickname: this.nickname
+            nickName: this.nickName
           }
-          this.$store.commit('setId', id)
-          this.$router.replace({path: '/layout/room'});
+          console.log('user info ',user)
+          this.$store.commit('setUser', user)
+          this.$router.replace({path: '/home'});
         }
       })
     }

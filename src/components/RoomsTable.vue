@@ -29,13 +29,12 @@
           <div v-if="showOwner(scope.row)" :class="getChessClass(scope.row.owner)"></div>
 
           <div v-if="showOwner(scope.row)" style="float: left">
-            {{ scope.row.owner.nickName}}
+            {{ scope.row.owner.nickName }}
           </div>
 
 
-
           <div v-if="showChallenger(scope.row)" style="float: left">
-            {{"-  VS  -"+scope.row.challenger.nickName }}
+            {{ "-  VS  -" + scope.row.challenger.nickName }}
           </div>
           <div v-if="showChallenger(scope.row)" :class="getChessClass( scope.row.challenger)"></div>
 
@@ -85,6 +84,15 @@ export default {
     }
   },
   methods: {
+    // 刷新房间列表
+    refresh() {
+      let api = '/api/game/room/room-list'
+      getRequest(api).then(res => {
+        if (res.status === 200) {
+          this.roomList = res.data
+        }
+      })
+    },
     // 创建新房间
     onCreateRoom() {
       if (this.$store.getters.myRoom != null) {
@@ -115,61 +123,57 @@ export default {
       })
     },
     setRoomRole(roomId, role) {
-      console.log('角色', role)
       let api = '/api/game/room/role/' + roomId
       postRequest(api, role).then(res => {
         if (res.status === 200) {
-          console.log('房间', roomId, ' ', role, '角色设置成功')
         } else {
           alert("角色设置失败")
         }
       }).catch(
           res => {
             alert("角色设置失败")
+            console.log('角色设置失败', res)
           }
       )
     },
-    // 刷新房间列表
-    refresh() {
-      let api = '/api/game/room/room-list'
-      getRequest(api).then(res => {
-        if (res.status === 200) {
-          // console.log(res.data)
-          this.roomList = res.data
-        }
-      })
-    },
-    getChessClass(player) {
-      if (player.turn === color.BLACK.CODE) {
-        return 'black'
-      } else if (player.turn === color.WHITE.CODE) {
-        return 'white'
-      }
-      return ''
-    },
     // 打开标签页并跳转（如果已经打开，则直接跳转）
     openTab(room) {
+      // 添加 tab
       this.$store.commit('addRoomTab', room)
+      // 更改当前显示的 tab
       this.$store.commit('changeCurrentTab', room.roomId)
     },
     onInto(room) {
+      room['selfRole'] = {
+        uid: this.$store.getters.uid,
+        nickName: this.$store.getters.nickName,
+        turn: 0
+      }
       this.openTab(room)
     },
     onChallenge(room) {
-      this.openTab(room)
-
       let role = {
-        "uid": this.$store.getters.uid,
-        "nickName": this.$store.getters.nickName,
-        "turn": 1
+        uid: this.$store.getters.uid,
+        nickName: this.$store.getters.nickName,
+        turn: 1
       }
-
+      // 设置挑战者身份
       this.setRoomRole(room.roomId, role)
+      room['selfRole'] = role
+      this.openTab(room)
     },
     onSpectate(room) {
-      this.openTab(room)
       // 以观战者身份加入
+      room['selfRole'] = {
+        uid: this.$store.getters.uid,
+        nickName: this.$store.getters.nickName,
+        turn: -1
+      }
+      this.openTab(room)
     },
+
+
+    // 下面都是前端控制渲染的谓词方法
     showOwner(room) {
       return room.owner != null && room.owner.nickName != null
     },
@@ -186,14 +190,19 @@ export default {
     },
     showIntoButton(room) {
       return room.owner != null && this.$store.getters.uid === room.owner.uid
+    },
+    getChessClass(player) {
+      if (player.turn === color.BLACK.CODE) {
+        return 'black'
+      } else if (player.turn === color.WHITE.CODE) {
+        return 'white'
+      }
+      return ''
     }
   },
-  computed: {
-    // roomList() {
-    //   return this.$store.getters.roomList
-    // }
-  },
+  computed: {},
   mounted() {
+    this.refresh()
     this.timer = setInterval(this.refresh, 3000);
   },
   beforeDestroy() {
