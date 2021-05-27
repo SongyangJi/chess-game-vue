@@ -4,47 +4,74 @@
       <span class="title">{{ dialogTitle }}</span>
     </div>
     <div class="scrollbar">
-      <div class="line" v-for="(item, index) in dialog" :key="index">
+      <div class="line" v-for="(item, index) in messages" :key="index">
         <span style="font-size: xx-small">{{ item.time }}</span>
         <br>
-        <span>{{ item.from }}: {{ item.content }}</span>
+        <span>{{ item.sender }}: {{ item.content }}</span>
       </div>
     </div>
     <div>
-      <el-input size="mini" v-model="input" class="input" @keyup.enter.native="onSend"/>
+      <el-input size="mini" v-model="text" class="input" @keyup.enter.native="onSend"/>
       <el-button size="mini" @click="onSend" class="send-button">发送</el-button>
     </div>
   </div>
 </template>
 
 <script>
+import {Chat} from "@/websocket/chatService";
 
 export default {
   name: "Dialog",
-  props: ['dialogTitle'],
+  props: ['dialogTitle', 'chatRoomId'],
   data() {
     return {
-      input: '',
-      dialog: []
+      text: '',
+      messages: [],
+      chatService:null
     }
   },
   methods: {
+    init(){
+      this.$store.commit({
+        type: 'updateNewestChatMessage',
+        from: 'system',
+        sender:'系统消息',
+        to: this.chatRoomId,
+        content: '聊起来吧！',
+        time: new Date().toLocaleString('cn',{hour12:false})
+      })
+      this.chatService = new Chat()
+      this.chatService.connectRoom(this.chatRoomId)
+      console.log('连接聊天房间' + this.roomId)
+    },
     onSend() {
+      let message = {
+        from: this.$store.getters.uid,
+        sender: this.$store.getters.nickName,
+        to: this.chatRoomId,
+        content: this.text,
+        time: null
+      }
+      this.chatService.send(message)
+      this.text = ''
     },
     addDialogMsg(msg) {
+      this.messages.push(msg)
     }
   },
   computed: {
     dialogMsg() {
-
+      return this.$store.getters.newestChatMessage
     }
   },
   watch: {
-    dialogMsg(newMsg) {
+    dialogMsg(chatMessage) {
+      if (chatMessage.to == null || chatMessage.to !== this.chatRoomId) return
+      this.addDialogMsg(chatMessage)
     }
   },
   mounted() {
-
+    this.init()
   }
 }
 </script>
