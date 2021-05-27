@@ -42,10 +42,10 @@ export default {
       gameService: null,
       // canvas 画板
       context: {},
-      // 本地下棋记录
+      // 本地下棋记录，两个作用。1.前端控制信息 2. 存储到本地，刷新页面后自动恢复
       steps: [],
       // 本地游戏状态
-      state: null
+      localState: null
     }
   },
   methods: {
@@ -71,6 +71,14 @@ export default {
         return
       }
 
+
+      if (this.localState == null || this.localState.state !== gameState.RUNNING) {
+        if (this.localState == null || this.localState.state === gameState.READY) {
+          alert('游戏尚未开始，请先准备')
+        }
+        return;
+      }
+
       let x = e.offsetX
       let y = e.offsetY
       let i = Math.floor(x / d)
@@ -94,7 +102,6 @@ export default {
 
         // console.log('发给服务器的操作信息', msg)
         this.gameService.move(msg)
-
       }
 
     },
@@ -105,7 +112,7 @@ export default {
      * @param color 颜色
      */
     chess(i, j, color) {
-      this.steps.push({i, j})
+      this.steps.push({i, j, color})
       this.drawChess(i, j, color)
       // this.drawLabel(i, j)
     },
@@ -161,8 +168,14 @@ export default {
 
   },
   mounted() {
-    this.initCanvas();
-    this.initSocket();
+    // 初始化画板
+    this.initCanvas()
+    // 初始化socket连接
+    this.initSocket()
+
+  },
+  // 初始化时需要加载对局信息，否则一刷新数据就全都丢失
+  created() {
 
   },
   computed: {
@@ -175,18 +188,32 @@ export default {
   },
   watch: {
     step(step) {
-      // 对应房间
+      // 对应房间才更新
       if (step != null && step.roomId === this.roomId) {
         let dot = step.dot
+        this.steps.push(dot)
         this.chess(dot.x, dot.y, dot.color)
       }
     },
     gameState(state) {
+      // 对应房间才更新
       if (state != null && state.roomId === this.roomId) {
-        this.state = state
-        alert('游戏结束')
+        this.localState = state
+      }
+    },
+    localState(state) {
+      switch (state.state) {
+        case gameState.RUNNING:
+          alert('游戏开始！')
+          break
+        case gameState.FINISH:
+          alert('游戏结束!')
+          break
+        case gameState.READY:
+          break
       }
     }
+
   }
 }
 </script>
