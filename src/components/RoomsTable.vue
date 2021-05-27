@@ -6,22 +6,7 @@
       <el-button size="mini" @click="refresh" style="float: right; margin-right: 10px">刷新</el-button>
     </div>
 
-    <!--    <el-dialog title="选择先后手" :visible.sync="dialog.visible" width="25%">-->
-    <!--      <el-form>-->
-    <!--        <el-form-item label="执方">-->
-    <!--          <el-select v-model="dialog.color">-->
-    <!--            <el-option label="黑" :value="0"></el-option>-->
-    <!--            <el-option label="白" :value="1"></el-option>-->
-    <!--          </el-select>-->
-    <!--        </el-form-item>-->
-    <!--      </el-form>-->
-    <!--      <div slot="footer" class="dialog-footer">-->
-    <!--        <el-button type="primary" @click="onDialogConfirm" size="small">确认</el-button>-->
-    <!--        <el-button @click="dialog.visible = false" size="small">取消</el-button>-->
-    <!--      </div>-->
-    <!--    </el-dialog>-->
-
-    <el-table :data="roomList" class="scrollbar" :show-header="false">
+    <el-table :data="roomList" height="580" :show-header="false">
 
       <el-table-column label="room">
         <div slot-scope="scope" style="display: inline-block">
@@ -64,6 +49,9 @@
 
         </template>
       </el-table-column>
+
+<!--      <el-table-column prop="roomId" label="房间号">-->
+<!--      </el-table-column>-->
 
     </el-table>
   </div>
@@ -151,19 +139,19 @@ export default {
       }
       this.openTab(room)
     },
+    // 以挑战者身份加入
     onChallenge(room) {
       let role = {
         uid: this.$store.getters.uid,
         nickName: this.$store.getters.nickName,
         turn: 1
       }
-      // 设置挑战者身份
       this.setRoomRole(room.roomId, role)
       room['selfRole'] = role
       this.openTab(room)
     },
+    // 以观战者身份加入
     onSpectate(room) {
-      // 以观战者身份加入
       room['selfRole'] = {
         uid: this.$store.getters.uid,
         nickName: this.$store.getters.nickName,
@@ -203,10 +191,10 @@ export default {
   computed: {},
   mounted() {
     this.refresh()
-    this.timer = setInterval(this.refresh, 3000);
+    // this.timer = setInterval(this.refresh, 3000);
   },
   beforeDestroy() {
-    clearInterval(this.timer);
+    // clearInterval(this.timer);
   }
 }
 
@@ -237,10 +225,6 @@ export default {
   margin-right: 2%;
 }
 
-.scrollbar {
-  height: calc(70vh);
-  min-height: 415px;
-}
 
 .header {
   border-bottom: 1px solid lightgrey;
