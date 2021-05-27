@@ -31,6 +31,9 @@ function onMessage(event) {
         case opt.STEP:
             showStep(gameMessage)
             break
+        case opt.START:
+            gameStart(gameMessage)
+            break
         case opt.OVER:
             gameOver(gameMessage)
             break
@@ -52,7 +55,17 @@ function gameOver(gameMessage) {
         type: 'updateGameState',
         roomId: gameMessage.roomId,
         state: gameState.FINISH,
-        winner:gameMessage.role
+        winner: gameMessage.role
     })
 }
+
+function gameStart(gameMessage) {
+    store.commit({
+        type: 'updateGameState',
+        roomId: gameMessage.roomId,
+        state: gameState.RUNNING,
+        winner: null
+    })
+}
+
 
